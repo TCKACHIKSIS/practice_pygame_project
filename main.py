@@ -40,10 +40,17 @@ def load_tileset_data(level):
         }
 
 
+sound_data = {}
+
+
 def load_level_data(level):
     if level == 1:
         pygame.mixer.music.load('sounds/C418 - Minecraft.mp3')
         f = open("data_leveling/level1_grass.txt", "r")
+        sound_data['walking'] = pygame.mixer.Sound('sounds/walking.mp3')
+        sound_data['gulp'] = pygame.mixer.Sound('sounds/gulp.mp3')
+        sound_data['wolf_angry'] = pygame.mixer.Sound('sounds/wolf_monster.mp3')
+        sound_data['wolf_hurt'] = pygame.mixer.Sound('sounds/wolf_hurt.mp3')
         need_data = {}
         for row in f:
             need_data[row.split()[0]] = row.split()[1]
@@ -71,6 +78,9 @@ class Player(pygame.sprite.Sprite):
         self.health = 10
         self.damage = 1
         self.attacke_zone = pygame.Rect((self.rect.centerx+10, self.rect.centery-32), (32, 64))
+        self.animation_run_set = []
+        self.animation_attack_set = []
+        self.current_run_image = 0
 
     def canGo(self, to_x, to_y):
         if to_y == 1:
@@ -83,10 +93,20 @@ class Player(pygame.sprite.Sprite):
     def update(self, go, changes_pos):
         if go:
             if player.canGo(changes_pos[0], changes_pos[1]):
+                sound_data['walking'].set_volume(0.5)
+                sound_data['walking'].play()
+                self.image = self.animation_run_set[self.current_run_image]
+                self.current_run_image += 1
+                if self.current_run_image > 3:
+                    self.current_run_image = 0
                 player.pos_x += changes_pos[0]
                 player.pos_y += changes_pos[1]
                 player.rect.x += changes_pos[0] * 16
                 player.rect.y += changes_pos[1] * 16
+        else:
+            sound_data['walking'].stop()
+            self.image = pygame.transform.scale(load_image('player/main_skeleton.png'), (16, 32))
+            self.current_run_image = 0
         self.gotcha(enemy_group)
 
     def attack(self, attack_side):
@@ -126,9 +146,12 @@ class Enemy(pygame.sprite.Sprite):
         self.pos_y = pos_y
         self.health = 4
         self.damage = 1
+        self.spawn_point_x = pos_x
+        self.spawn_point_y = pos_y
         self.anger_zone = pygame.Rect((self.rect.centerx-100, self.rect.centery-100), (200, 200))
 
     def take_damage(self, damage_get):
+        sound_data['wolf_hurt'].play()
         self.health -= damage_get
         if self.health == 0:
             self.kill()
@@ -141,6 +164,9 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         if self.is_insane():
+            growl_or_not = random.randrange(0, 10, 1)
+            if growl_or_not > 7:
+                sound_data['wolf_angry'].play()
             if self.pos_x < player.pos_x:
                 self.pos_x += 0.5
             if self.pos_x > player.pos_x:
@@ -153,8 +179,21 @@ class Enemy(pygame.sprite.Sprite):
                 self.pos_y -= 0.5
             if self.pos_y == player.pos_y:
                 self.pos_y = self.pos_y
-            self.rect = self.image.get_rect().move(self.pos_x * 16, self.pos_y * 16)
-            self.anger_zone = pygame.Rect((self.rect.centerx - 100, self.rect.centery - 100), (200, 200))
+        else:
+            if self.pos_x < self.spawn_point_x:
+                self.pos_x += 0.5
+            if self.pos_x > self.spawn_point_x:
+                self.pos_x -= 0.5
+            if self.pos_x == self.spawn_point_x:
+                self.pos_x = self.pos_x
+            if self.pos_y < self.spawn_point_y:
+                self.pos_y += 0.5
+            if self.pos_y > self.spawn_point_y:
+                self.pos_y -= 0.5
+            if self.pos_y == self.spawn_point_y:
+                self.pos_y = self.pos_y
+        self.rect = self.image.get_rect().move(self.pos_x * 16, self.pos_y * 16)
+        self.anger_zone = pygame.Rect((self.rect.centerx - 100, self.rect.centery - 100), (200, 200))
 
 
 class ItemBox(pygame.sprite.Sprite):
@@ -180,6 +219,7 @@ class DamageBox(ItemBox):
         ItemBox.__init__(self, image, pos_x, pos_y)
 
     def use_item(self, player):
+        sound_data['gulp'].play()
         player.damage += 1
         self.kill()
 
@@ -189,6 +229,7 @@ class HealBox(ItemBox):
         ItemBox.__init__(self, image, pos_x, pos_y)
 
     def use_item(self, player):
+        sound_data['gulp'].play()
         if player.health + 5 <= 10:
             player.health += 5
         else:
@@ -201,7 +242,15 @@ class SpeedBox(ItemBox):
         ItemBox.__init__(self, image, pos_x, pos_y)
 
 
-player = Player(pygame.transform.scale(load_image('player/mario5.png'), (16, 32)), 3, 20)
+player = Player(pygame.transform.scale(load_image('player/main_skeleton.png'), (16, 32)), 3, 20)
+player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run1.png'), (16, 32)))
+player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run2.png'), (16, 32)))
+player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run3.png'), (16, 32)))
+player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run4.png'), (16, 32)))
+player.animation_attack_set.append(pygame.transform.scale(load_image('player/skeleton_data/attack1.png'), (16, 32)))
+player.animation_attack_set.append(pygame.transform.scale(load_image('player/skeleton_data/attack2.png'), (16, 32)))
+player.animation_attack_set.append(pygame.transform.scale(load_image('player/skeleton_data/attack3.png'), (16, 32)))
+
 health_image = load_image("player/heart pixel art 16x16.png")
 damage_image = load_image('player/damage_stat.png')
 damage_image = pygame.transform.scale(damage_image, (25, 25))
@@ -343,7 +392,6 @@ while True:
     items_group.draw(screen)
     enemy_group.draw(screen)
     pygame.display.flip()
-
     if not enemy_group:
         pygame.quit()
         sys.exit()
