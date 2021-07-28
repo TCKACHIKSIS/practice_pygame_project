@@ -1,16 +1,13 @@
-            if keys[pygame.K_d]:
-                pressed_key = event.key
-                isWalk = True
-                change_pos = (1, 0)
-            if event.key == pygame.K_a:
-                pressed_key = event.key
-                isWalk = True
-                change_pos = (-1, 0)
-            if event.key == pygame.K_w:
-                pressed_key = event.key
-                isWalk = True
-                change_pos = (0, -1)
-            if event.key == pygame.K_s:
-                pressed_key = event.key
-                isWalk = True
-                change_pos = (0, 1)
+             if to_y == 1:
+            to_y = 2
+        if map_level_tile_empty[self.pos_x + to_x][self.pos_y + to_y].name == 'wall':
+            return False
+        else:
+            return True
+
+
+                    if player.canGo(changes_pos[0], changes_pos[1]):
+                player.pos_x += changes_pos[0]
+                player.pos_y += changes_pos[1]
+                player.rect.x += changes_pos[0] * 16
+                player.rect.y += changes_pos[1] * 16

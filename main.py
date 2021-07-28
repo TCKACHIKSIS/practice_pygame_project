@@ -42,6 +42,7 @@ def load_tileset_data(level):
 
 def load_level_data(level):
     if level == 1:
+        pygame.mixer.music.load('sounds/C418 - Minecraft.mp3')
         f = open("data_leveling/level1_grass.txt", "r")
         need_data = {}
         for row in f:
@@ -239,6 +240,7 @@ for i in range(len(map_level_template_empty[0])):
 for i in range(len(map_level_template_empty[len(map_level_template_empty)-1])):
     map_level_template_empty[len(map_level_template_empty)-1][i] = '|'
 map_level_tile_empty = []
+wall_group = pygame.sprite.Group()
 for i in range(len(map_level_template_empty)):
     ptr_list = []
     for j in range(len(map_level_template_empty[i])):
@@ -248,6 +250,7 @@ for i in range(len(map_level_template_empty)):
             ptr_list.append(Tile(source_tileset[1].name, source_tileset[1].image, source_tileset[1].code_sym, i, j))
         if map_level_template_empty[i][j] == '|':
             ptr_list.append(Tile(source_tileset[2].name, source_tileset[2].image, source_tileset[2].code_sym, i, j))
+            wall_group.add(Tile(source_tileset[2].name, source_tileset[2].image, source_tileset[2].code_sym, i, j))
     map_level_tile_empty.append(ptr_list)
 
 
@@ -260,6 +263,7 @@ for i in range(len(map_level_tile_empty)):
 screen.blit(player.image, player.rect)
 pygame.display.flip()
 timer = pygame.time.Clock()
+pygame.mixer.music.play(-1)
 while True:
     damage_stat_label = main_font.render(str(player.damage), False, (0, 0, 0))
     timer.tick(3)
@@ -333,8 +337,6 @@ while True:
         screen.blit(health_image, (32 + 32 * i, 16))
     screen.blit(damage_image, (25*16, 10))
     screen.blit(damage_stat_label, (27*16, 16))
-    for enemy in enemy_group:
-        pygame.draw.rect(screen, (255, 0, 0), enemy.anger_zone, 3)
     for item in items_group:
         if item.update():
             item.use_item(player)
