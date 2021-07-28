@@ -5,6 +5,7 @@ import random
 
 pygame.init()
 screen = pygame.display.set_mode((640, 640))
+main_font = pygame.font.SysFont('arial', 16)
 
 
 def load_user_data():
@@ -155,13 +156,66 @@ class Enemy(pygame.sprite.Sprite):
             self.anger_zone = pygame.Rect((self.rect.centerx - 100, self.rect.centery - 100), (200, 200))
 
 
+class ItemBox(pygame.sprite.Sprite):
+    def __init__(self, image, pos_x, pos_y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = image
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.rect = self.image.get_rect().move(self.pos_x * 16, self.pos_y * 16)
+
+    def use_item(self, player):
+        pass
+
+    def update(self):
+        if self.rect.colliderect(player.rect):
+            return True
+        else:
+            return False
+
+
+class DamageBox(ItemBox):
+    def __init__(self, image, pos_x, pos_y):
+        ItemBox.__init__(self, image, pos_x, pos_y)
+
+    def use_item(self, player):
+        player.damage += 1
+        self.kill()
+
+
+class HealBox(ItemBox):
+    def __init__(self, image, pos_x, pos_y):
+        ItemBox.__init__(self, image, pos_x, pos_y)
+
+    def use_item(self, player):
+        if player.health + 5 <= 10:
+            player.health += 5
+        else:
+            player.health = 10
+        self.kill()
+
+
+class SpeedBox(ItemBox):
+    def __init__(self, image, pos_x, pos_y):
+        ItemBox.__init__(self, image, pos_x, pos_y)
+
+
 player = Player(pygame.transform.scale(load_image('player/mario5.png'), (16, 32)), 3, 20)
-player_group = pygame.sprite.Group()
 health_image = load_image("player/heart pixel art 16x16.png")
+damage_image = load_image('player/damage_stat.png')
+damage_image = pygame.transform.scale(damage_image, (25, 25))
 enemy_image = pygame.transform.flip(load_image('enemy/howl.png'), True, False)
+
 enemy_group = pygame.sprite.Group()
 for i in range(3):
     enemy_group.add(Enemy(pygame.transform.scale(enemy_image, (32, 32)), 35, (i+1)*10))
+
+items_group = pygame.sprite.Group()
+items_group.add(
+    DamageBox(load_image('items/damage_up.png'), 10, 10),
+    HealBox(load_image('items/healt_up.png'), 12, 10),
+    SpeedBox(load_image('items/speed_up.png'), 14, 10)
+)
 
 user_data = load_user_data()
 data_tileset = load_tileset_data(int(user_data['level']))
@@ -207,6 +261,7 @@ screen.blit(player.image, player.rect)
 pygame.display.flip()
 timer = pygame.time.Clock()
 while True:
+    damage_stat_label = main_font.render(str(player.damage), False, (0, 0, 0))
     timer.tick(3)
     for event in pygame.event.get():
         keys = pygame.key.get_pressed()
@@ -220,7 +275,6 @@ while True:
             if event.key == pygame.K_n:
                 pressed_key = event.key
                 player.take_heal(1)
-
             if keys[pygame.K_d]:
                 pressed_key = event.key
                 isWalk = True
@@ -247,7 +301,7 @@ while True:
             if keys[pygame.K_s] and keys[pygame.K_d]:
                 isWalk = True
                 change_pos = (1, 1)
-            if keys[pygame.K_w] and keys[pygame.K_a]:
+            if keys[pygame.K_s] and keys[pygame.K_a]:
                 isWalk = True
                 change_pos = (-1, 1)
 
@@ -274,10 +328,19 @@ while True:
         for j in range(len(map_level_tile_empty[i])):
             screen.blit(map_level_tile_empty[i][j].image, map_level_tile_empty[i][j].rect)
     screen.blit(player.image, player.rect)
+
     for i in range(player.health):
         screen.blit(health_image, (32 + 32 * i, 16))
+    screen.blit(damage_image, (25*16, 10))
+    screen.blit(damage_stat_label, (27*16, 16))
     for enemy in enemy_group:
         pygame.draw.rect(screen, (255, 0, 0), enemy.anger_zone, 3)
+    for item in items_group:
+        if item.update():
+            item.use_item(player)
+    items_group.draw(screen)
+    enemy_group.draw(screen)
+    pygame.display.flip()
 
     if not enemy_group:
         pygame.quit()
@@ -287,6 +350,3 @@ while True:
         pygame.quit()
         sys.exit()
 
-
-    enemy_group.draw(screen)
-    pygame.display.flip()
