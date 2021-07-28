@@ -1,2 +1,0 @@
-length 160
-width 40

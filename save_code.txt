@@ -1,0 +1,16 @@
+            if keys[pygame.K_d]:
+                pressed_key = event.key
+                isWalk = True
+                change_pos = (1, 0)
+            if event.key == pygame.K_a:
+                pressed_key = event.key
+                isWalk = True
+                change_pos = (-1, 0)
+            if event.key == pygame.K_w:
+                pressed_key = event.key
+                isWalk = True
+                change_pos = (0, -1)
+            if event.key == pygame.K_s:
+                pressed_key = event.key
+                isWalk = True
+                change_pos = (0, 1)
