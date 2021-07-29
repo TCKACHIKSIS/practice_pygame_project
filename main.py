@@ -81,6 +81,16 @@ class Player(pygame.sprite.Sprite):
         self.animation_run_set = []
         self.animation_attack_set = []
         self.current_run_image = 0
+        self.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run1.png'), (16, 32)))
+        self.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run2.png'), (16, 32)))
+        self.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run3.png'), (16, 32)))
+        self.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run4.png'), (16, 32)))
+        self.animation_attack_set.append(
+            pygame.transform.scale(load_image('player/skeleton_data/attack1.png'), (16, 32)))
+        self.animation_attack_set.append(
+            pygame.transform.scale(load_image('player/skeleton_data/attack2.png'), (16, 32)))
+        self.animation_attack_set.append(
+            pygame.transform.scale(load_image('player/skeleton_data/attack3.png'), (16, 32)))
 
     def canGo(self, to_x, to_y):
         if to_y == 1:
@@ -243,14 +253,7 @@ class SpeedBox(ItemBox):
 
 
 player = Player(pygame.transform.scale(load_image('player/main_skeleton.png'), (16, 32)), 3, 20)
-player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run1.png'), (16, 32)))
-player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run2.png'), (16, 32)))
-player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run3.png'), (16, 32)))
-player.animation_run_set.append(pygame.transform.scale(load_image('player/skeleton_data/run4.png'), (16, 32)))
-player.animation_attack_set.append(pygame.transform.scale(load_image('player/skeleton_data/attack1.png'), (16, 32)))
-player.animation_attack_set.append(pygame.transform.scale(load_image('player/skeleton_data/attack2.png'), (16, 32)))
-player.animation_attack_set.append(pygame.transform.scale(load_image('player/skeleton_data/attack3.png'), (16, 32)))
-
+player_group = pygame.sprite.Group()
 health_image = load_image("player/heart pixel art 16x16.png")
 damage_image = load_image('player/damage_stat.png')
 damage_image = pygame.transform.scale(damage_image, (25, 25))
@@ -302,6 +305,38 @@ for i in range(len(map_level_template_empty)):
             wall_group.add(Tile(source_tileset[2].name, source_tileset[2].image, source_tileset[2].code_sym, i, j))
     map_level_tile_empty.append(ptr_list)
 
+not_start = True
+
+title_screen_gif = [pygame.transform.scale(load_image('data_leveling/welcom_gif/0.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/1.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/2.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/3.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/4.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/5.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/6.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/7.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/8.gif'), (640, 640)),
+                    pygame.transform.scale(load_image('data_leveling/welcom_gif/9.gif'), (640, 640))
+                    ]
+gif_count = 0
+while not_start:
+    pygame.time.Clock().tick(5)
+    screen.blit(title_screen_gif[gif_count], (0, 0))
+    gif_count += 1
+    if gif_count > 9:
+        gif_count = 0
+    pygame.draw.rect(screen, (0, 0, 0), ((75, 180), (200, 100)))
+    welcome_text = main_font.render(f"Welcome to beta_project", True, (255, 255, 255))
+    menu_text = main_font.render(f"Press any key to start", False, (255, 255, 255))
+    screen.blit(menu_text, (100, 250))
+    screen.blit(welcome_text, (84, 200))
+    pygame.display.flip()
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            not_start = False
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
 
 isWalk = False
 change_pos = (0, 0)
@@ -313,6 +348,7 @@ screen.blit(player.image, player.rect)
 pygame.display.flip()
 timer = pygame.time.Clock()
 pygame.mixer.music.play(-1)
+
 while True:
     damage_stat_label = main_font.render(str(player.damage), False, (0, 0, 0))
     timer.tick(3)
@@ -392,11 +428,7 @@ while True:
     items_group.draw(screen)
     enemy_group.draw(screen)
     pygame.display.flip()
-    if not enemy_group:
-        pygame.quit()
-        sys.exit()
 
     if player.health == 0:
         pygame.quit()
         sys.exit()
-
