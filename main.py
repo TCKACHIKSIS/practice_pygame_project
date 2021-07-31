@@ -253,7 +253,7 @@ class SpeedBox(ItemBox):
 
 
 player = Player(pygame.transform.scale(load_image('player/main_skeleton.png'), (16, 32)), 3, 20)
-player_group = pygame.sprite.Group()
+
 health_image = load_image("player/heart pixel art 16x16.png")
 damage_image = load_image('player/damage_stat.png')
 damage_image = pygame.transform.scale(damage_image, (25, 25))
@@ -318,6 +318,20 @@ title_screen_gif = [pygame.transform.scale(load_image('data_leveling/welcom_gif/
                     pygame.transform.scale(load_image('data_leveling/welcom_gif/8.gif'), (640, 640)),
                     pygame.transform.scale(load_image('data_leveling/welcom_gif/9.gif'), (640, 640))
                     ]
+end_screen_gif = [
+    pygame.transform.scale(load_image('data_leveling/end_gif/0.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/1.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/2.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/3.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/4.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/5.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/6.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/7.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/8.gif'), (640, 640)),
+    pygame.transform.scale(load_image('data_leveling/end_gif/9.gif'), (640, 640))
+    ]
+
+
 gif_count = 0
 while not_start:
     pygame.time.Clock().tick(5)
@@ -364,7 +378,8 @@ while True:
             if event.key == pygame.K_n:
                 pressed_key = event.key
                 player.take_heal(1)
-            if keys[pygame.K_d]:
+            if event.key == pygame.K_d:
+                print("ok")
                 pressed_key = event.key
                 isWalk = True
                 change_pos = (1, 0)
@@ -429,6 +444,45 @@ while True:
     enemy_group.draw(screen)
     pygame.display.flip()
 
-    if player.health == 0:
-        pygame.quit()
-        sys.exit()
+    if player.health == 0 or not enemy_group:
+        not_start = True
+        gif_count = 0
+        restart_button = pygame.sprite.Sprite()
+        restart_button.image = main_font.render("R - Начать заново", False, (255, 255, 255))
+        restart_button.rect = ((250, 150), (250, 40))
+        exit_button = pygame.sprite.Sprite()
+        exit_button.image = main_font.render("esc -  Выйти", False, (255, 255, 255))
+        exit_button.rect = ((250, 200), (250, 40))
+        button_group_end_menu = pygame.sprite.Group()
+        button_group_end_menu.add(exit_button, restart_button)
+        while not_start:
+            timer.tick(5)
+            screen.blit(end_screen_gif[gif_count], (0, 0))
+            pygame.draw.rect(screen, (0, 0, 0), ((230, 130), (200, 100)))
+            screen.blit(restart_button.image, restart_button.rect)
+            screen.blit(exit_button.image, exit_button.rect)
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                            pygame.quit()
+                            sys.exit()
+                    if event.key == pygame.K_r:
+                        player = Player(pygame.transform.scale(load_image('player/main_skeleton.png'), (16, 32)), 3, 20)
+                        enemy_group.empty()
+                        for i in range(3):
+                            enemy_group.add(Enemy(pygame.transform.scale(enemy_image, (32, 32)), 35, (i + 1) * 10))
+                        items_group.add(
+                            DamageBox(load_image('items/damage_up.png'), 10, 10),
+                            HealBox(load_image('items/healt_up.png'), 12, 10),
+                            SpeedBox(load_image('items/speed_up.png'), 14, 10)
+                        )
+                        not_start = False
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            gif_count += 1
+            if gif_count > 9:
+                gif_count = 0
+
+            pygame.display.flip()
