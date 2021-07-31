@@ -348,6 +348,7 @@ while not_start:
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             not_start = False
+            break
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
@@ -364,6 +365,7 @@ timer = pygame.time.Clock()
 pygame.mixer.music.play(-1)
 
 while True:
+    print("ok")
     damage_stat_label = main_font.render(str(player.damage), False, (0, 0, 0))
     timer.tick(3)
     for event in pygame.event.get():
@@ -379,7 +381,6 @@ while True:
                 pressed_key = event.key
                 player.take_heal(1)
             if event.key == pygame.K_d:
-                print("ok")
                 pressed_key = event.key
                 isWalk = True
                 change_pos = (1, 0)
@@ -471,6 +472,7 @@ while True:
                         enemy_group.empty()
                         for i in range(3):
                             enemy_group.add(Enemy(pygame.transform.scale(enemy_image, (32, 32)), 35, (i + 1) * 10))
+                        items_group.empty()
                         items_group.add(
                             DamageBox(load_image('items/damage_up.png'), 10, 10),
                             HealBox(load_image('items/healt_up.png'), 12, 10),
